@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/ramendr/ramen/e2e/suites"
 	"github.com/ramendr/ramen/e2e/util"
@@ -48,15 +49,46 @@ func main() {
 		panic(err)
 	}
 
-	err = RunSuite(&suites.PrecheckSuite{}, ctx)
-	if err != nil {
-		panic(err)
-	}
+	// All TestSuites can run simultaneously.
 
-	err = RunSuite(&suites.BasicSuite{}, ctx)
-	if err != nil {
-		panic(err)
-	}
+	var wg sync.WaitGroup
+	var numTestSuites = 4
+	wg.Add(numTestSuites)
+
+	go func() {
+		defer wg.Done()
+		err = RunSuite(&suites.PrecheckSuite{}, ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		err = RunSuite(&suites.BasicSuite{}, ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		err = RunSuite(&suites.AppsetSuite{}, ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		err = RunSuite(&suites.ImperativeSuite{}, ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	wg.Wait()
+
 	ctx.Log.Info("exit main()")
 }
 
