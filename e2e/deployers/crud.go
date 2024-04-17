@@ -3,7 +3,6 @@ package deployers
 import (
 	"context"
 	"fmt"
-	"os/exec"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -20,8 +19,8 @@ import (
 )
 
 func (a *ApplicationSet) createApplicationSet(w workloads.Workload) error {
-	util.LogEnter(&a.Ctx.Log)
-	defer util.LogExit(&a.Ctx.Log)
+	util.LogEnter(a.Ctx.Log)
+	defer util.LogExit(a.Ctx.Log)
 
 	var requeueSeconds int64 = 180
 
@@ -74,7 +73,7 @@ func (a *ApplicationSet) createApplicationSet(w workloads.Workload) error {
 		},
 	}
 
-	err := a.Ctx.HubCtrlClient().Create(context.Background(), appset)
+	err := a.Ctx.Hub.CtrlClient.Create(context.Background(), appset)
 	if err != nil {
 		if !errors.IsAlreadyExists(err) {
 			a.Ctx.Log.Error(err, "")
@@ -89,8 +88,8 @@ func (a *ApplicationSet) createApplicationSet(w workloads.Workload) error {
 }
 
 func (a *ApplicationSet) deleteApplicationSet() error {
-	util.LogEnter(&a.Ctx.Log)
-	defer util.LogExit(&a.Ctx.Log)
+	util.LogEnter(a.Ctx.Log)
+	defer util.LogExit(a.Ctx.Log)
 
 	appset := &argocdv1alpha1hack.ApplicationSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -99,7 +98,7 @@ func (a *ApplicationSet) deleteApplicationSet() error {
 		},
 	}
 
-	err := a.Ctx.HubCtrlClient().Delete(context.Background(), appset)
+	err := a.Ctx.Hub.CtrlClient.Delete(context.Background(), appset)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			a.Ctx.Log.Error(err, "")
@@ -113,7 +112,7 @@ func (a *ApplicationSet) deleteApplicationSet() error {
 	return nil
 }
 
-func createPlacementDecisionConfigMap(ctx *util.TestContext, cmName string, cmNamespace string) error {
+func createPlacementDecisionConfigMap(ctx *util.Context, cmName string, cmNamespace string) error {
 	object := metav1.ObjectMeta{Name: cmName, Namespace: cmNamespace}
 
 	data := map[string]string{
@@ -125,7 +124,7 @@ func createPlacementDecisionConfigMap(ctx *util.TestContext, cmName string, cmNa
 
 	configMap := &corev1.ConfigMap{ObjectMeta: object, Data: data}
 
-	err := ctx.HubCtrlClient().Create(context.Background(), configMap)
+	err := ctx.Hub.CtrlClient.Create(context.Background(), configMap)
 	if err != nil {
 		if !errors.IsAlreadyExists(err) {
 			ctx.Log.Error(err, "")
@@ -139,14 +138,14 @@ func createPlacementDecisionConfigMap(ctx *util.TestContext, cmName string, cmNa
 	return nil
 }
 
-func deleteConfigMap(ctx *util.TestContext, cmName string, cmNamespace string) error {
+func deleteConfigMap(ctx *util.Context, cmName string, cmNamespace string) error {
 	object := metav1.ObjectMeta{Name: cmName, Namespace: cmNamespace}
 
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: object,
 	}
 
-	err := ctx.HubCtrlClient().Delete(context.Background(), configMap)
+	err := ctx.Hub.CtrlClient.Delete(context.Background(), configMap)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			ctx.Log.Error(err, "")
@@ -162,17 +161,17 @@ func deleteConfigMap(ctx *util.TestContext, cmName string, cmNamespace string) e
 
 func (a *ApplicationSet) addArgoCDClusters() error {
 	//TODO: clusternames better to be dynamically got from config
-	for _, c := range util.ClusterNames {
-		a.Ctx.Log.Info("add cluster " + c + " into ArgoCD")
-		cmd := exec.Command("argocd", "cluster", "add", c, " -y --namespace argocd --kubeconfig "+a.Ctx.HubKubeconfig())
+	// for _, c := range util.ClusterNames {
+	// 	a.Ctx.Log.Info("add cluster " + c + " into ArgoCD")
+	// 	cmd := exec.Command("argocd", "cluster", "add", c, " -y --namespace argocd --kubeconfig "+a.Ctx.Hub.Kubeconfig)
 
-		out, err := util.RunCommand(&a.Ctx.Log, cmd)
-		if err != nil {
-			return err
-		}
+	// 	out, err := util.RunCommand(a.Ctx.Log, cmd)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		a.Ctx.Log.Info(out)
-	}
+	// 	a.Ctx.Log.Info(out)
+	// }
 
 	return nil
 }
@@ -192,14 +191,14 @@ func (a *ApplicationSet) addArgoCDClusters() error {
 // 	return nil
 // }
 
-func createNamespace(ctx *util.TestContext, namespace string) error {
+func createNamespace(ctx *util.Context, namespace string) error {
 	objNs := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namespace,
 		},
 	}
 
-	err := ctx.HubCtrlClient().Create(context.Background(), objNs)
+	err := ctx.Hub.CtrlClient.Create(context.Background(), objNs)
 	if err != nil {
 		if !errors.IsAlreadyExists(err) {
 			ctx.Log.Error(err, "")
@@ -243,7 +242,7 @@ func (s *Subscription) createSubscription(w workloads.Workload) error {
 		},
 	}
 
-	err := s.Ctx.HubCtrlClient().Create(context.Background(), objSubscription)
+	err := s.Ctx.Hub.CtrlClient.Create(context.Background(), objSubscription)
 	if err != nil {
 		if !errors.IsAlreadyExists(err) {
 			s.Ctx.Log.Error(err, "")
@@ -257,7 +256,7 @@ func (s *Subscription) createSubscription(w workloads.Workload) error {
 	return nil
 }
 
-func createPlacement(ctx *util.TestContext, plName string, plNamespace string, appName string) error {
+func createPlacement(ctx *util.Context, plName string, plNamespace string, appName string) error {
 	labels := make(map[string]string)
 	labels["apps"] = appName
 
@@ -277,7 +276,7 @@ func createPlacement(ctx *util.TestContext, plName string, plNamespace string, a
 		},
 	}
 
-	err := ctx.HubCtrlClient().Create(context.Background(), objPlacement)
+	err := ctx.Hub.CtrlClient.Create(context.Background(), objPlacement)
 	if err != nil {
 		if !errors.IsAlreadyExists(err) {
 			ctx.Log.Error(err, "")
@@ -291,7 +290,7 @@ func createPlacement(ctx *util.TestContext, plName string, plNamespace string, a
 	return nil
 }
 
-func createManagedClusterSetBinding(ctx *util.TestContext, mcsbName string, mcsbNamespace string, appName string) error {
+func createManagedClusterSetBinding(ctx *util.Context, mcsbName string, mcsbNamespace string, appName string) error {
 
 	labels := make(map[string]string)
 	labels["apps"] = appName // s.AppName
@@ -307,7 +306,7 @@ func createManagedClusterSetBinding(ctx *util.TestContext, mcsbName string, mcsb
 		},
 	}
 
-	err := ctx.HubCtrlClient().Create(context.Background(), objMCSB)
+	err := ctx.Hub.CtrlClient.Create(context.Background(), objMCSB)
 	if err != nil {
 		if !errors.IsAlreadyExists(err) {
 			ctx.Log.Error(err, "")
@@ -321,14 +320,14 @@ func createManagedClusterSetBinding(ctx *util.TestContext, mcsbName string, mcsb
 	return nil
 }
 
-func deleteNamespace(ctx *util.TestContext, namespace string) error {
+func deleteNamespace(ctx *util.Context, namespace string) error {
 	objNs := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namespace,
 		},
 	}
 
-	err := ctx.HubCtrlClient().Delete(context.Background(), objNs)
+	err := ctx.Hub.CtrlClient.Delete(context.Background(), objNs)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			ctx.Log.Error(err, "")
@@ -350,7 +349,7 @@ func (s *Subscription) deleteSubscription() error {
 		},
 	}
 
-	err := s.Ctx.HubCtrlClient().Delete(context.Background(), objSubscription)
+	err := s.Ctx.Hub.CtrlClient.Delete(context.Background(), objSubscription)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			s.Ctx.Log.Error(err, "")
@@ -364,7 +363,7 @@ func (s *Subscription) deleteSubscription() error {
 	return nil
 }
 
-func deletePlacement(ctx *util.TestContext, plName string, plNamespace string) error {
+func deletePlacement(ctx *util.Context, plName string, plNamespace string) error {
 	objPlacement := &ocmclusterv1beta1.Placement{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      plName,      // util.DefaultPlacement,
@@ -372,7 +371,7 @@ func deletePlacement(ctx *util.TestContext, plName string, plNamespace string) e
 		},
 	}
 
-	err := ctx.HubCtrlClient().Delete(context.Background(), objPlacement)
+	err := ctx.Hub.CtrlClient.Delete(context.Background(), objPlacement)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			ctx.Log.Error(err, "")
@@ -386,7 +385,7 @@ func deletePlacement(ctx *util.TestContext, plName string, plNamespace string) e
 	return nil
 }
 
-func deleteManagedClusterSetBinding(ctx *util.TestContext, mcsbName string, mcsbNamespace string) error {
+func deleteManagedClusterSetBinding(ctx *util.Context, mcsbName string, mcsbNamespace string) error {
 	objMCSB := &ocmclusterv1beta2.ManagedClusterSetBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      mcsbName,      // "default",
@@ -394,7 +393,7 @@ func deleteManagedClusterSetBinding(ctx *util.TestContext, mcsbName string, mcsb
 		},
 	}
 
-	err := ctx.HubCtrlClient().Delete(context.Background(), objMCSB)
+	err := ctx.Hub.CtrlClient.Delete(context.Background(), objMCSB)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			ctx.Log.Error(err, "")

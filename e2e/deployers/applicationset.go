@@ -6,7 +6,7 @@ import (
 )
 
 type ApplicationSet struct {
-	Ctx *util.TestContext
+	Ctx *util.Context
 
 	Name      string
 	Namespace string
@@ -35,8 +35,8 @@ func (a ApplicationSet) Deploy(w workloads.Workload) error {
 	// - Kustomize the Workload; call Workload.Kustomize(StorageType)
 	// Address namespace/label/suffix as needed for various resources
 	// w.Kustomize()
-	util.LogEnter(&a.Ctx.Log)
-	defer util.LogExit(&a.Ctx.Log)
+	util.LogEnter(a.Ctx.Log)
+	defer util.LogExit(a.Ctx.Log)
 
 	err := a.addArgoCDClusters()
 	if err != nil {
@@ -68,8 +68,8 @@ func (a ApplicationSet) Deploy(w workloads.Workload) error {
 
 func (a ApplicationSet) Undeploy(w workloads.Workload) error {
 	// Delete Placement, Binding, ApplicationSet
-	util.LogEnter(&a.Ctx.Log)
-	defer util.LogExit(&a.Ctx.Log)
+	util.LogEnter(a.Ctx.Log)
+	defer util.LogExit(a.Ctx.Log)
 
 	err := a.deleteApplicationSet()
 	if err != nil {
@@ -116,8 +116,8 @@ func (a ApplicationSet) GetNameSpace() string {
 }
 
 func (a ApplicationSet) Health(w workloads.Workload) error {
-	util.LogEnter(&a.Ctx.Log)
-	defer util.LogExit(&a.Ctx.Log)
+	util.LogEnter(a.Ctx.Log)
+	defer util.LogExit(a.Ctx.Log)
 
 	// w.GetResources()
 	// Check health using reflection to known types of the workload on the targetCluster

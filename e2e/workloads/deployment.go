@@ -10,7 +10,7 @@ type Deployment struct {
 	//	Revision string
 	AppName string
 
-	Ctx *util.TestContext
+	Ctx *util.Context
 }
 
 func (w *Deployment) Init() {
@@ -42,24 +42,24 @@ func (w Deployment) GetPath() string {
 // }
 
 func (w Deployment) Kustomize() error {
-	util.LogEnter(&w.Ctx.Log)
-	defer util.LogExit(&w.Ctx.Log)
+	util.LogEnter(w.Ctx.Log)
+	defer util.LogExit(w.Ctx.Log)
 
 	return nil
 }
 
 func (w Deployment) GetResources() error {
 	// this would be a common function given the vars? But we need the resources Kustomized
-	util.LogEnter(&w.Ctx.Log)
-	defer util.LogExit(&w.Ctx.Log)
+	util.LogEnter(w.Ctx.Log)
+	defer util.LogExit(w.Ctx.Log)
 
 	return nil
 }
 
 func (w Deployment) Health() error {
 	// Check the workload health on a targetCluster
-	util.LogEnter(&w.Ctx.Log)
-	defer util.LogExit(&w.Ctx.Log)
+	util.LogEnter(w.Ctx.Log)
+	defer util.LogExit(w.Ctx.Log)
 
 	return nil
 }

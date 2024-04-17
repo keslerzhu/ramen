@@ -9,7 +9,7 @@ type Subscription struct {
 	// branch  string
 	// path    string
 	// channel string
-	Ctx *util.TestContext
+	Ctx *util.Context
 
 	ChannelName      string
 	ChannelNamespace string
@@ -42,8 +42,8 @@ func (s Subscription) Deploy(w workloads.Workload) error {
 	// Generate a Subscription for the Workload
 	// - Kustomize the Workload; call Workload.Kustomize(StorageType)
 	// Address namespace/label/suffix as needed for various resources
-	util.LogEnter(&s.Ctx.Log)
-	defer util.LogExit(&s.Ctx.Log)
+	util.LogEnter(s.Ctx.Log)
+	defer util.LogExit(s.Ctx.Log)
 
 	// w.Kustomize()
 	err := createNamespace(s.Ctx, s.Namespace)
@@ -71,8 +71,8 @@ func (s Subscription) Deploy(w workloads.Workload) error {
 
 func (s Subscription) Undeploy(w workloads.Workload) error {
 	// Delete Subscription, Placement, Binding
-	util.LogEnter(&s.Ctx.Log)
-	defer util.LogExit(&s.Ctx.Log)
+	util.LogEnter(s.Ctx.Log)
+	defer util.LogExit(s.Ctx.Log)
 
 	err := s.deleteSubscription()
 	if err != nil {
@@ -98,8 +98,8 @@ func (s Subscription) Undeploy(w workloads.Workload) error {
 }
 
 func (s Subscription) Health(w workloads.Workload) error {
-	util.LogEnter(&s.Ctx.Log)
-	defer util.LogExit(&s.Ctx.Log)
+	util.LogEnter(s.Ctx.Log)
+	defer util.LogExit(s.Ctx.Log)
 	// w.GetResources()
 	// Check health using reflection to known types of the workload on the targetCluster
 	// Again if using reflection can be a common function outside of deployer as such

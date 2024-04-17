@@ -44,6 +44,14 @@ type Cluster struct {
 	CtrlClient   client.Client
 }
 
+type Context struct {
+	Log    *logr.Logger
+	Hub    Cluster
+	C1     Cluster
+	C2     Cluster
+	Config *Config
+}
+
 type Clusters map[string]*Cluster
 
 type TestContext struct {

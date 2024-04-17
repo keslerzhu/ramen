@@ -12,7 +12,7 @@ import (
 )
 
 type DRActions struct {
-	Ctx *util.TestContext
+	Ctx *util.Context
 }
 
 const OcmSchedulingDisable = "cluster.open-cluster-management.io/experimental-scheduling-disable"
@@ -24,8 +24,8 @@ func (r DRActions) EnableProtection(w workloads.Workload, d deployers.Deployer) 
 	// Determine PVC label selector
 	// Determine KubeObjectProtection requirements if Imperative (?)
 	// Create DRPC, in desired namespace
-	util.LogEnter(&r.Ctx.Log)
-	defer util.LogExit(&r.Ctx.Log)
+	util.LogEnter(r.Ctx.Log)
+	defer util.LogExit(r.Ctx.Log)
 
 	_, isSub := d.(*deployers.Subscription)
 	_, isAppSet := d.(*deployers.ApplicationSet)
@@ -42,7 +42,7 @@ func (r DRActions) EnableProtection(w workloads.Workload, d deployers.Deployer) 
 		}
 
 		drpcName := name + "-drpc"
-		client := r.Ctx.HubCtrlClient()
+		client := r.Ctx.Hub.CtrlClient
 
 		placement, placementDecisionName, err := r.waitPlacementDecision(client, namespace, placementName)
 		if err != nil {
@@ -121,8 +121,8 @@ func (r DRActions) EnableProtection(w workloads.Workload, d deployers.Deployer) 
 func (r DRActions) DisableProtection(w workloads.Workload, d deployers.Deployer) error {
 	// remove DRPC
 	// update placement annotation
-	util.LogEnter(&r.Ctx.Log)
-	defer util.LogExit(&r.Ctx.Log)
+	util.LogEnter(r.Ctx.Log)
+	defer util.LogExit(r.Ctx.Log)
 
 	_, ok := d.(*deployers.Subscription)
 	if ok {
@@ -130,7 +130,7 @@ func (r DRActions) DisableProtection(w workloads.Workload, d deployers.Deployer)
 		namespace := d.GetNameSpace()
 		placementName := util.DefaultPlacement
 		drpcName := name + "-drpc"
-		client := r.Ctx.HubCtrlClient()
+		client := r.Ctx.Hub.CtrlClient
 
 		r.Ctx.Log.Info("delete drpc " + drpcName)
 
@@ -166,15 +166,15 @@ func (r DRActions) Failover(w workloads.Workload, d deployers.Deployer) error {
 	// Check Placement
 	// Failover to alternate in DRPolicy as the failoverCluster
 	// Update DRPC
-	util.LogEnter(&r.Ctx.Log)
-	defer util.LogExit(&r.Ctx.Log)
+	util.LogEnter(r.Ctx.Log)
+	defer util.LogExit(r.Ctx.Log)
 
 	name := d.GetName()
 	namespace := d.GetNameSpace()
 	// placementName := w.GetPlacementName()
 	drPolicyName := r.Ctx.Config.DRPolicy
 	drpcName := name + "-drpc"
-	client := r.Ctx.HubCtrlClient()
+	client := r.Ctx.Hub.CtrlClient
 
 	// here we expect drpc should be ready before failover
 	err := r.waitDRPCReady(client, namespace, drpcName)
@@ -244,14 +244,14 @@ func (r DRActions) Relocate(w workloads.Workload, d deployers.Deployer) error {
 	// Check Placement
 	// Relocate to Primary in DRPolicy as the PrimaryCluster
 	// Update DRPC
-	util.LogEnter(&r.Ctx.Log)
-	defer util.LogExit(&r.Ctx.Log)
+	util.LogEnter(r.Ctx.Log)
+	defer util.LogExit(r.Ctx.Log)
 
 	name := d.GetName()
 	namespace := d.GetNameSpace()
 	// placementName := w.GetPlacementName()
 	drpcName := name + "-drpc"
-	client := r.Ctx.HubCtrlClient()
+	client := r.Ctx.Hub.CtrlClient
 
 	// here we expect drpc should be ready before relocate
 	err := r.waitDRPCReady(client, namespace, drpcName)
