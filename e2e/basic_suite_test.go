@@ -74,20 +74,40 @@ func Deploy(t *testing.T) {
 
 func Enable(t *testing.T) {
 	e2eContext.Log.Info(t.Name())
+
+	if err := basicSuite.r.EnableProtection(basicSuite.w, basicSuite.d); err != nil {
+		t.Error(err)
+	}
 }
 
 func Failover(t *testing.T) {
 	e2eContext.Log.Info(t.Name())
+
+	if err := basicSuite.r.Failover(basicSuite.w, basicSuite.d); err != nil {
+		t.Error(err)
+	}
 }
 
 func Relocate(t *testing.T) {
 	e2eContext.Log.Info(t.Name())
+
+	if err := basicSuite.r.Relocate(basicSuite.w, basicSuite.d); err != nil {
+		t.Error(err)
+	}
 }
 
 func Disable(t *testing.T) {
 	e2eContext.Log.Info(t.Name())
+
+	if err := basicSuite.r.DisableProtection(basicSuite.w, basicSuite.d); err != nil {
+		t.Error(err)
+	}
 }
 
 func Undeploy(t *testing.T) {
 	e2eContext.Log.Info(t.Name())
+
+	if err := basicSuite.d.Undeploy(basicSuite.w); err != nil {
+		t.Error(err)
+	}
 }
