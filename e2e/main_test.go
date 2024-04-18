@@ -313,8 +313,8 @@ type testDef struct {
 }
 
 var Suites = []testDef{
+	{"Validate", Validate},
 	{"Basic", Basic},
-	// {"Validate", Validate},
 	// {"Exhaustive", Exhaustive},
 }
 

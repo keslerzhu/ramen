@@ -4,7 +4,6 @@
 package e2e_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/ramendr/ramen/e2e/deployers"
@@ -51,10 +50,10 @@ func Basic(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Println(basicSuite)
-	fmt.Println(basicSuite.w)
-	fmt.Println(basicSuite.d)
-	fmt.Println(basicSuite.r)
+	// fmt.Println(basicSuite)
+	// fmt.Println(basicSuite.w)
+	// fmt.Println(basicSuite.d)
+	// fmt.Println(basicSuite.r)
 
 	t.Run("Deploy", Deploy)
 	t.Run("Enable", Enable)
