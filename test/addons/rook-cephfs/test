@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+import os
+import sys
+
+from drenv import kubectl
+
+PVC_NAME = "cephfs-pvc"
+SNAP_NAME = "cephfs-snap"
+
+
+def test_provisioning(cluster):
+    print(f"Deploying pvc {PVC_NAME} in cluster '{cluster}'")
+    kubectl.apply(
+        f"--filename={PVC_NAME}.yaml",
+        "--namespace=rook-ceph",
+        context=cluster,
+    )
+
+    print(f"Waiting until pvc {PVC_NAME} is bound in cluster '{cluster}'")
+    kubectl.wait(
+        f"pvc/{PVC_NAME}",
+        "--for=jsonpath={.status.phase}=Bound",
+        "--namespace=rook-ceph",
+        "--timeout=300s",
+        context=cluster,
+    )
+
+    print(f"Deploying snapshot {SNAP_NAME} in cluster '{cluster}'")
+    kubectl.apply(
+        f"--filename={SNAP_NAME}.yaml",
+        "--namespace=rook-ceph",
+        context=cluster,
+    )
+
+    print(f"Waiting until snapshot {SNAP_NAME} is bound in cluster '{cluster}'")
+    kubectl.wait(
+        f"volumesnapshot/{SNAP_NAME}",
+        "--for=jsonpath={.status.readyToUse}=true",
+        "--namespace=rook-ceph",
+        "--timeout=300s",
+        context=cluster,
+    )
+
+    print(f"Deleting snapshot {SNAP_NAME} in cluster '{cluster}'")
+    kubectl.delete(
+        f"volumesnapshot/{SNAP_NAME}",
+        "--namespace=rook-ceph",
+        context=cluster,
+    )
+
+    print(f"Deleting pvc {PVC_NAME} in cluster '{cluster}'")
+    kubectl.delete(
+        f"pvc/{PVC_NAME}",
+        "--namespace=rook-ceph",
+        context=cluster,
+    )
+
+    print(f"CephFS PVC and Snapshot provisioning on cluster '{cluster}' succeeded")
+
+
+if len(sys.argv) != 2:
+    print(f"Usage: {sys.argv[0]} cluster")
+    sys.exit(1)
+
+os.chdir(os.path.dirname(__file__))
+cluster = sys.argv[1]
+
+test_provisioning(cluster)
